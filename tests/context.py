@@ -1,9 +1,11 @@
 import sys
 import os
-toppath = os.path.join(__file__, '..', '..')
-toppath = os.path.abspath(toppath)
+from functools import reduce
 
-print(toppath)
+toppath = os.path.abspath('..')
 sys.path.insert(0, toppath)
 
 import alived
+
+def bsjoin(iterable):
+    return reduce(lambda x,y: x+y, iterable).decode()

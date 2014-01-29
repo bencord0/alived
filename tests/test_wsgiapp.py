@@ -5,7 +5,7 @@ try:
 except ImportError:
     import urllib.parse as urlparse
 
-from context import alived
+from .context import alived, bsjoin
 
 
 class RequestFaker(object):
@@ -28,7 +28,7 @@ class RequestFaker(object):
             'REQUEST_METHOD': method,
         }
 
-        response['body'] = [r for r in self.app(environ, start_response)]
+        response['body'] = bsjoin(self.app(environ, start_response))
         return response
 
 
@@ -56,7 +56,7 @@ class TestWsgiApp(RequestFaker, unittest.TestCase):
             response['headers'],
             [('content-type', 'application/json')])
         self.assertEqual(
-            ''.join(response['body']),
+            response['body'],
             "Hello World\n")
 
     def test_404(self):
@@ -68,7 +68,7 @@ class TestWsgiApp(RequestFaker, unittest.TestCase):
             response['headers'],
             [('content-type', 'text/plain')])
         self.assertEqual(
-            ''.join(response['body']),
+            response['body'],
             "Not Found\n")
 
 if __name__ == '__main__':
