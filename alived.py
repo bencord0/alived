@@ -4,6 +4,7 @@ import re
 from wsgiref.simple_server import make_server
 from wsgiref.util import application_uri, request_uri
 
+
 class wsgiapp(object):
     def get_route(self, environ):
         route = request_uri(environ).split(
@@ -35,7 +36,6 @@ class wsgiapp(object):
         if 'close' in wsgiter:
             wsgiter.close()
 
-app = wsgiapp()
 
 def ping_route(environ, start_response):
     start_response("200 OK", [
@@ -43,12 +43,14 @@ def ping_route(environ, start_response):
     ])
     return ["Hello World\n"]
 
+
 def notfound_route(environ, start_response):
     start_response("404 Not Found", [
         ('content-type', 'text/plain'),
     ])
     return ["Not Found\n"]
 
+app = wsgiapp()
 if __name__ == '__main__':
     import os
     httpd = make_server(
@@ -56,4 +58,3 @@ if __name__ == '__main__':
         int(os.environ.get('PORT', 8000)),
         app)
     httpd.serve_forever()
-

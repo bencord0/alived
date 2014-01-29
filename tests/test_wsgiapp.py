@@ -7,14 +7,17 @@ except ImportError:
 
 from context import alived
 
+
 class RequestFaker(object):
     def request(self, method, url):
         response = {}
+
         def start_response(code, headers):
             response['code'] = int(code.split()[0])
             response['headers'] = [
                 (header[0].lower(), header[1].lower())
                 for header in headers]
+
         url = urlparse.urlparse(url)
         environ = {
             'wsgi.url_scheme': url.scheme or 'http',
@@ -24,15 +27,17 @@ class RequestFaker(object):
             'QUERY_STRING': url.query,
             'REQUEST_METHOD': method,
         }
-        response['body'] = self.app(environ, start_response)
+
+        response['body'] = [r for r in self.app(environ, start_response)]
         return response
+
 
 class TestWsgiApp(RequestFaker, unittest.TestCase):
     def setUp(self):
-        self.app = alived.app()
+        self.app = alived.app
 
     def test_route(self):
-	self.assertEqual(
+        self.assertEqual(
             self.app.get_route({
                 'wsgi.url_scheme': 'http',
                 'SERVER_NAME': '',
@@ -67,5 +72,5 @@ class TestWsgiApp(RequestFaker, unittest.TestCase):
             "Not Found\n")
 
 if __name__ == '__main__':
-	import sys
-	sys.exit(unittest.main())
+    import sys
+    sys.exit(unittest.main())
