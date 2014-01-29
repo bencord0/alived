@@ -4,15 +4,15 @@ import re
 from wsgiref.simple_server import make_server
 from wsgiref.util import application_uri, request_uri
 
-class app(object):
+class wsgiapp(object):
     def get_route(self, environ):
         route = request_uri(environ).split(
             application_uri(environ), 1)[1].split('?')
         return (route.pop(0), '?'.join(route))
 
     def __call__(self, environ, start_response):
-        # Quick Static routes
         try:
+            # Quick Static routes
             wsgi_request = {
                 'ping': ping_route,
             }[self.get_route(environ)[0]]
@@ -26,9 +26,17 @@ class app(object):
                     wsgi_request = func
                     break
 
-        return wsgi_request(environ, start_response)
-        
-		
+        wsgiter = wsgi_request(environ, start_response)
+        for chunk in wsgiter:
+            if not isinstance(chunk, bytes):
+                yield chunk.encode('utf-8')
+            else:
+                yield chunk
+        if 'close' in wsgiter:
+            wsgiter.close()
+
+app = wsgiapp()
+
 def ping_route(environ, start_response):
     start_response("200 OK", [
         ('content-type', 'application/json'),
@@ -46,5 +54,6 @@ if __name__ == '__main__':
     httpd = make_server(
         os.environ.get('IP', ''),
         int(os.environ.get('PORT', 8000)),
-        app())
+        app)
     httpd.serve_forever()
+
